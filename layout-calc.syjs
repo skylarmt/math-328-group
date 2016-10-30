@@ -1,0 +1,30 @@
+var boardlen = 10;
+var minmonsters = 1;
+var maxmonsters = 36;
+var mintreasures = 1;
+var maxtreasures = 36;
+var players = 1;
+var badplayers = 1;
+var totalcomb = 0;
+var boardsize = boardlen * boardlen;
+
+
+print("===================================================");
+print("Board:     " + boardlen + "x" + boardlen + "(" + boardsize + ")");
+print("Players:   " + players + " good, " + badplayers + " bad");
+print("Monsters:  " + minmonsters + " to " + maxmonsters);
+print("Treasure:  " + mintreasures + " to " + maxtreasures);
+print("===================================================");
+print("  Calculating...");
+for (var m = minmonsters; m <= maxmonsters; m++) {
+	for (var t = mintreasures; t <= maxtreasures; t++) {
+		var comb_mt   = factorial(boardsize - 2 * boardlen)/(factorial(m) * factorial(t) * factorial(boardsize - 2 * boardlen - m - t));
+		var comb_good = factorial(boardlen)/(factorial(players) * factorial(boardlen - players));
+		var comb_bad  = factorial(boardlen)/(factorial(badplayers) * factorial(boardlen - badplayers));
+		totalcomb += (comb_mt * comb_good * comb_bad);
+	}
+}
+print("  Finished.");
+print("===================================================");
+print("Possible board setups: " + totalcomb);
+print("===================================================");
