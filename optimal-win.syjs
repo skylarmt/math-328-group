@@ -1,0 +1,114 @@
+var board = [
+[0,0,0,0,0,-1,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0],
+[1,2,3,4,5,6,7,8,9,10]
+];
+
+var players = [-1, 1,2,3,4,5,6,7,8,9,10];
+var badguyhit = false;
+var badguymoved = false;
+var turns = 0;
+var badhealth = board.length * 2;
+
+function findme(playerid) {
+	for (var i = 0; i < board.length; i++) {
+		for (var j = 0; j < board[i].length; j++) {
+			if (board[i][j] === playerid) {
+				return {"y": i, "x": j};
+			}
+		}
+	}
+}
+
+function isproxtobad(id) {
+	var me = findme(id);
+	var he = findme(-1);
+	if (abs(me["x"] - he["x"]) <= 1 && abs(me["y"] - he["y"]) <= 1) {
+		return true;
+	}
+	return false;
+}
+
+function moverelative(id, spaces, direction) {
+	var location = findme(id);
+	var newlocation = findme(id);
+	switch (direction) {
+		case "NORTH":
+			newlocation["y"] -= spaces;
+			break;
+		case "SOUTH":
+			newlocation["y"] += spaces;
+			break;
+		case "WEST":
+			newlocation["x"] -= spaces;
+			break;
+		case "EAST":
+			newlocation["x"] += spaces;
+			break;
+		case "NORTHWEST":
+			newlocation["x"] -= spaces;
+			newlocation["y"] -= spaces;
+			break;
+		case "NORTHEAST":
+			newlocation["x"] += spaces;
+			newlocation["y"] -= spaces;
+			break;
+		case "SOUTHWEST":
+			newlocation["x"] -= spaces;
+			newlocation["y"] += spaces;
+			break;
+		case "SOUTHEAST":
+			newlocation["x"] += spaces;
+			newlocation["y"] += spaces;
+			break;
+	}
+	board[location["y"]][location["x"]] = 0;
+	board[newlocation["y"]][newlocation["x"]] = id;
+}
+
+function dumpgame() {
+	for (var i = 0; i < board.length; i++) {
+		var line = "|";
+		for (var j = 0; j < board[i].length; j++) {
+			line += "\t" + (board[i][j] == 0 ? " " : board[i][j]) + "\t|";
+		}
+		print(line);
+	}
+	print("  Turns: " + turns + ", BG HP: " + badhealth);
+}
+
+while (badhealth > 0) {
+	for (var pn = 1; pn < players.length; pn++) {
+		var currentplayer = players[pn]; // currently active player
+		var location = findme(currentplayer);
+		var badlocation = findme(-1);
+		for (var s = 1; s <= 6; s++) { // move spaces
+			if (location["y"] > 0) {
+				if (abs(location["x"] - badlocation["x"]) >= location["y"]) {
+					moverelative(currentplayer, 1, (location["x"] > badlocation["x"] ? "NORTHWEST" : (location["x"] < badlocation["x"] ? "NORTHEAST" : "NORTH")));
+				} else {
+					moverelative(currentplayer, 1, "NORTH");
+				}
+			}
+			if (isproxtobad(currentplayer) && s < 6) {
+				badhealth -= 1;
+				if (!badguyhit && !badguymoved) {
+					badguyhit = true;
+					moverelative(-1, 1, "SOUTH");
+					badhealth =ceil(badhealth / 2);
+					badguymoved = true;
+					turns++;
+				}
+			}
+		}
+		turns++;
+		dumpgame();
+	}
+}
